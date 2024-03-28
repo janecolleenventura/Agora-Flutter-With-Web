@@ -44,6 +44,7 @@ import 'package:flutter/foundation.dart'
     show ChangeNotifier, debugPrint, defaultTargetPlatform, kIsWeb;
 import 'package:flutter/services.dart' show MethodChannel;
 import 'package:flutter/widgets.dart' show VoidCallback, TargetPlatform;
+import 'dart:html' show document;
 import 'package:iris_method_channel/iris_method_channel.dart';
 import 'package:meta/meta.dart';
 
@@ -158,6 +159,10 @@ extension RtcEngineExt on RtcEngine {
     final List<Uint8List> buffers = [];
     buffers.addAll(canvas.collectBufferList());
     buffers.addAll(connection.collectBufferList());
+    var isElementVisible = await _waitForHtmlElement(viewHandle.toString());
+    if (!isElementVisible) {
+      return;
+    }
     final callApiResult = await irisMethodChannel.invokeMethod(
         IrisMethodCall(apiType, jsonEncode(param), buffers: buffers));
     if (callApiResult.irisReturnCode < 0) {
@@ -176,6 +181,10 @@ extension RtcEngineExt on RtcEngine {
     final param = _createParamsWeb(viewHandle, canvas);
     final List<Uint8List> buffers = [];
     buffers.addAll(canvas.collectBufferList());
+    var isElementVisible = await _waitForHtmlElement(viewHandle.toString());
+    if (!isElementVisible) {
+      return;
+    }
     final callApiResult = await irisMethodChannel.invokeMethod(
         IrisMethodCall(apiType, jsonEncode(param), buffers: buffers));
     if (callApiResult.irisReturnCode < 0) {
@@ -191,10 +200,13 @@ extension RtcEngineExt on RtcEngine {
   Future<void> _setupLocalVideoWeb(
       VideoCanvas canvas, Object viewHandle) async {
     const apiType = 'RtcEngine_setupLocalVideo_acc9c38';
-    // The type of the `VideoCanvas.view` is `String` on web
     final param = _createParamsWeb(viewHandle, canvas);
     final List<Uint8List> buffers = [];
     buffers.addAll(canvas.collectBufferList());
+    var isElementVisible = await _waitForHtmlElement(viewHandle.toString());
+    if (!isElementVisible) {
+      return;
+    }
     final callApiResult = await irisMethodChannel.invokeMethod(IrisMethodCall(
       apiType,
       jsonEncode(param),
@@ -204,6 +216,20 @@ extension RtcEngineExt on RtcEngine {
       throw AgoraRtcException(code: callApiResult.irisReturnCode);
     }
     return;
+  }
+
+  Future<bool> _waitForHtmlElement(String elementId) async {
+    // Wait for parent element to be visible in the DOM
+    const checkInterval = Duration(milliseconds: 100);
+    for (var i = const Duration(seconds: 0); i < const Duration(seconds: 5); i += checkInterval) {
+      final element = document.getElementById(elementId);
+      if (element != null) {
+        return true;
+      }
+      await Future.delayed(checkInterval);
+    }
+    debugPrint('Warning: HTML element with ID "$elementId" not found.');
+    return false;
   }
 }
 
