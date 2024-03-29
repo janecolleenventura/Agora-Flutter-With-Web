@@ -44,11 +44,10 @@ import 'package:flutter/foundation.dart'
     show ChangeNotifier, debugPrint, defaultTargetPlatform, kIsWeb;
 import 'package:flutter/services.dart' show MethodChannel;
 import 'package:flutter/widgets.dart' show VoidCallback, TargetPlatform;
-import 'dart:html' show document;
 import 'package:iris_method_channel/iris_method_channel.dart';
 import 'package:meta/meta.dart';
-
 import 'platform/global_video_view_controller.dart';
+import 'package:agora_rtc_engine/src/html.dart' if (dart.library.js) 'dart:html' as html;
 
 // ignore_for_file: public_member_api_docs
 
@@ -222,7 +221,7 @@ extension RtcEngineExt on RtcEngine {
     // Wait for parent element to be visible in the DOM
     const checkInterval = Duration(milliseconds: 100);
     for (var i = const Duration(seconds: 0); i < const Duration(seconds: 5); i += checkInterval) {
-      final element = document.getElementById(elementId);
+      final element = html.document.getElementById(elementId);
       if (element != null) {
         return true;
       }
