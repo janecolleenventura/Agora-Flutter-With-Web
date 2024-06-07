@@ -15,7 +15,7 @@ import '../testcases/event_ids_mapping.dart';
 
 void generatedTestCases(ValueGetter<IrisTester> irisTester) {
   testWidgets(
-    'MetadataObserver.onMetadataReceived',
+    'FaceInfoObserver.onFaceInfo',
     (WidgetTester tester) async {
       RtcEngine rtcEngine = createAgoraRtcEngine();
       await rtcEngine.initialize(RtcEngineContext(
@@ -23,67 +23,52 @@ void generatedTestCases(ValueGetter<IrisTester> irisTester) {
         areaCode: AreaCode.areaCodeGlob.value(),
       ));
       await rtcEngine.setParameters('{"rtc.enable_debug_log": true}');
+      final mediaEngine = rtcEngine.getMediaEngine();
 
-      final onMetadataReceivedCompleter = Completer<bool>();
-      final theMetadataObserver = MetadataObserver(
-        onMetadataReceived: (Metadata metadata) {
-          onMetadataReceivedCompleter.complete(true);
+      final onFaceInfoCompleter = Completer<bool>();
+      final theFaceInfoObserver = FaceInfoObserver(
+        onFaceInfo: (String outFaceInfo) {
+          onFaceInfoCompleter.complete(true);
         },
       );
 
-      MetadataType type = MetadataType.unknownMetadata;
-
-      rtcEngine.registerMediaMetadataObserver(
-        observer: theMetadataObserver,
-        type: type,
+      mediaEngine.registerFaceInfoObserver(
+        theFaceInfoObserver,
       );
 
-// Delay 500 milliseconds to ensure the registerMediaMetadataObserver call completed.
+// Delay 500 milliseconds to ensure the registerFaceInfoObserver call completed.
       await Future.delayed(const Duration(milliseconds: 500));
 
       {
-        int metadataUid = 5;
-        int metadataSize = 5;
-        Uint8List metadataBuffer = Uint8List.fromList([1, 1, 1, 1, 1]);
-        int metadataTimeStampMs = 5;
-        Metadata metadata = Metadata(
-          uid: metadataUid,
-          size: metadataSize,
-          buffer: metadataBuffer,
-          timeStampMs: metadataTimeStampMs,
-        );
+        String outFaceInfo = "hello";
 
         final eventJson = {
-          'metadata': metadata.toJson(),
+          'outFaceInfo': outFaceInfo,
         };
 
-        final eventIds =
-            eventIdsMapping['MetadataObserver_onMetadataReceived'] ?? [];
+        final eventIds = eventIdsMapping['FaceInfoObserver_onFaceInfo'] ?? [];
         for (final event in eventIds) {
           final ret = irisTester().fireEvent(event, params: eventJson);
           // Delay 200 milliseconds to ensure the callback is called.
           await Future.delayed(const Duration(milliseconds: 200));
           // TODO(littlegnal): Most of callbacks on web are not implemented, we're temporarily skip these callbacks at this time.
           if (kIsWeb && ret) {
-            if (!onMetadataReceivedCompleter.isCompleted) {
-              onMetadataReceivedCompleter.complete(true);
+            if (!onFaceInfoCompleter.isCompleted) {
+              onFaceInfoCompleter.complete(true);
             }
           }
         }
       }
 
-      final eventCalled = await onMetadataReceivedCompleter.future;
+      final eventCalled = await onFaceInfoCompleter.future;
       expect(eventCalled, isTrue);
 
       {
-        MetadataType type = MetadataType.unknownMetadata;
-
-        rtcEngine.unregisterMediaMetadataObserver(
-          observer: theMetadataObserver,
-          type: type,
+        mediaEngine.unregisterFaceInfoObserver(
+          theFaceInfoObserver,
         );
       }
-// Delay 500 milliseconds to ensure the unregisterMediaMetadataObserver call completed.
+// Delay 500 milliseconds to ensure the unregisterFaceInfoObserver call completed.
       await Future.delayed(const Duration(milliseconds: 500));
 
       await rtcEngine.release();
