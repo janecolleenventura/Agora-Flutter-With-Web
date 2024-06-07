@@ -338,14 +338,24 @@ Map<String, dynamic> _$RtcEngineGetUserInfoByUserAccountJsonToJson(
 RtcEngineGetUserInfoByUidJson _$RtcEngineGetUserInfoByUidJsonFromJson(
         Map<String, dynamic> json) =>
     RtcEngineGetUserInfoByUidJson(
-      UserInfo.fromJson(json['userInfo'] as Map<String, dynamic>),
+      json['userInfo'] == null
+          ? null
+          : UserInfo.fromJson(json['userInfo'] as Map<String, dynamic>),
     );
 
 Map<String, dynamic> _$RtcEngineGetUserInfoByUidJsonToJson(
-        RtcEngineGetUserInfoByUidJson instance) =>
-    <String, dynamic>{
-      'userInfo': instance.userInfo.toJson(),
-    };
+    RtcEngineGetUserInfoByUidJson instance) {
+  final val = <String, dynamic>{};
+
+  void writeNotNull(String key, dynamic value) {
+    if (value != null) {
+      val[key] = value;
+    }
+  }
+
+  writeNotNull('userInfo', instance.userInfo?.toJson());
+  return val;
+}
 
 RtcEngineExCreateDataStreamExJson _$RtcEngineExCreateDataStreamExJsonFromJson(
         Map<String, dynamic> json) =>
