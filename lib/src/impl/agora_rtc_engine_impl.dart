@@ -225,6 +225,7 @@ extension RtcEngineExt on RtcEngine {
 
   Future<bool> _waitForHtmlElement(String elementId) async {
     // Wait for parent element to be visible in the DOM
+     debugPrint('Finding html element to attach to');
     for (int i = 0; i <= 5000; i += 1000) {
       final element = html.document.getElementById(elementId);
       if (element != null) {
