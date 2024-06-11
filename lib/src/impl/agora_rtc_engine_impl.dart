@@ -166,7 +166,7 @@ extension RtcEngineExt on RtcEngine {
     buffers.addAll(connection.collectBufferList());
     var isElementVisible = await _waitForHtmlElement(viewHandle.toString());
     if (!isElementVisible) {
-      return;
+      throw Exception('Warning: HTML element not found.');
     }
     final callApiResult = await irisMethodChannel.invokeMethod(
         IrisMethodCall(apiType, jsonEncode(param), buffers: buffers));
@@ -188,7 +188,7 @@ extension RtcEngineExt on RtcEngine {
     buffers.addAll(canvas.collectBufferList());
     var isElementVisible = await _waitForHtmlElement(viewHandle.toString());
     if (!isElementVisible) {
-      return;
+      throw Exception('Warning: HTML element not found.');
     }
     final callApiResult = await irisMethodChannel.invokeMethod(
         IrisMethodCall(apiType, jsonEncode(param), buffers: buffers));
@@ -210,7 +210,7 @@ extension RtcEngineExt on RtcEngine {
     buffers.addAll(canvas.collectBufferList());
     var isElementVisible = await _waitForHtmlElement(viewHandle.toString());
     if (!isElementVisible) {
-      return;
+      throw Exception('Warning: HTML element not found.');
     }
     final callApiResult = await irisMethodChannel.invokeMethod(IrisMethodCall(
       apiType,
@@ -225,13 +225,12 @@ extension RtcEngineExt on RtcEngine {
 
   Future<bool> _waitForHtmlElement(String elementId) async {
     // Wait for parent element to be visible in the DOM
-    const checkInterval = Duration(milliseconds: 100);
-    for (var i = const Duration(seconds: 0); i < const Duration(seconds: 5); i += checkInterval) {
+    for (int i = 0; i <= 5000; i += 1000) {
       final element = html.document.getElementById(elementId);
       if (element != null) {
         return true;
       }
-      await Future.delayed(checkInterval);
+      await Future.delayed(Duration(milliseconds: i));
     }
     debugPrint('Warning: HTML element with ID "$elementId" not found.');
     return false;
